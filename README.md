@@ -1,6 +1,6 @@
-# n8n Automated AI Dev Environment
+# n8n Ollama Agents
 
-**n8n Automated AI Dev Environment** automates a range of compatible AI products and components to quickly get started with building self-hosted AI workflows with Ollama.
+**n8n Ollama Agents** a collection of my used credentials and workflows with Ollama.
 
 See [INFO.md](INFO.md) for upstream details.
 
