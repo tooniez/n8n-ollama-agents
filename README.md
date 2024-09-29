@@ -22,6 +22,16 @@ For example, if you have a service running on port 3000 on your local machine, y
 http://host.docker.internal
 ```
 
+## Included Workflows
+
+- Local RAG AI Agent
+- Supabase RAG AI Agent
+- Base RAG AI Agent
+- Demo Agent Workflow
+- Qdrant Vector Store Loader
+- Supabase Vector Store Loader
+```
+
 ## 📜 License
 
 This project is licensed under the Apache License 2.0 - see the
