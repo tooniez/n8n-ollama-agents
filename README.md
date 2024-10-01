@@ -43,6 +43,22 @@ http://host.docker.internal
 - Demo Agent Workflow
 - Qdrant Vector Store Loader
 - Supabase Vector Store Loader
+
+## Backup and Restore
+
+Workflow and Credential backups are stored in `./backups` and can be restored using the `n8n-restore` container.
+
+
+### Backup
+
+```shell
+docker compose up n8n-backup
+```
+
+### Restore
+
+```shell
+docker compose up n8n-restore
 ```
 
 ## 📜 License
