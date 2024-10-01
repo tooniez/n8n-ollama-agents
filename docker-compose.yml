@@ -3,6 +3,7 @@ volumes:
   postgres_storage:
   ollama_storage:
   qdrant_storage:
+  redis_storage:
 
 networks:
   demo:
@@ -100,6 +101,22 @@ services:
       - 6333:6333
     volumes:
       - qdrant_storage:/qdrant/storage
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    networks: ['n8n-ai-network']
+    restart: unless-stopped
+    environment:
+      - REDIS_HOST
+      - REDIS_PORT
+      - REDIS_PASSWORD
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_storage:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
 
   ollama-cpu:
     profiles: ["cpu"]

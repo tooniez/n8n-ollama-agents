@@ -11,6 +11,19 @@ See [INFO.md](INFO.md) for upstream details.
 - **Ollama**: Cross-platform LLM runner
 - **Qdrant**: Vector database for AI applications
 - **PostgreSQL**: Relational database for data storage
+- **Redis**: In-memory data structure store, used for caching and session management
+- **Supabase**: Open-source alternative to Firebase, used for real-time data sync and storage
+
+
+## 🛠 Project Workflow
+
+1. **Setup**: The Docker Compose file initializes all necessary services.
+2. **Data Ingestion**: Use n8n workflows to load data into Qdrant or Supabase.
+3. **AI Processing**: Leverage Ollama for local LLM inference within n8n workflows.
+4. **Workflow Creation**: Build custom AI agents and RAG systems using n8n's visual editor.
+5. **Integration**: Connect your AI workflows with external services and APIs.
+6. **Execution**: Run your workflows on-demand or on a schedule within the self-hosted environment.
+
 ## 🚀 Connecting to localhost services
 
 When integrating with other services running on your local machine (outside of the Docker network), use the special DNS name `host.docker.internal` instead of `localhost`. This allows containers to communicate with services on your host machine.
