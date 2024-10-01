@@ -63,15 +63,30 @@ services:
       timeout: 5s
       retries: 10
 
-  n8n-import:
+  n8n-restore:
     <<: *service-n8n
-    container_name: n8n-import
+    container_name: n8n-restore
     entrypoint: /bin/sh
     command:
       - "-c"
       - "n8n import:credentials --separate --input=/backup/credentials && n8n import:workflow --separate --input=/backup/workflows"
     volumes:
       - ./n8n/backup:/backup
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  n8n-backup:
+    <<: *service-n8n
+    container_name: n8n-backup
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - "n8n export:credentials --backup --output=credentials/ && n8n export:workflow --backup --output=workflows/"
+    volumes:
+      - ./n8n/backup:/backup
+      - ./n8n/backup/workflows:/home/node/workflows
+      - ./n8n/backup/credentials:/home/node/credentials
     depends_on:
       postgres:
         condition: service_healthy
@@ -86,10 +101,14 @@ services:
       - n8n_storage:/home/node/.n8n
       - ./n8n/backup:/backup
       - ./shared:/data/shared
+      - ./n8n/backup/workflows:/home/node/workflows
+      - ./n8n/backup/credentials:/home/node/credentials
     depends_on:
       postgres:
         condition: service_healthy
-      n8n-import:
+      n8n-restore:
+        condition: service_completed_successfully
+      n8n-backup:
         condition: service_completed_successfully
 
   qdrant:
