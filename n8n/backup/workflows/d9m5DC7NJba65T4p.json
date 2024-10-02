@@ -1,0 +1,533 @@
+{
+  "createdAt": "2024-09-30T02:45:54.650Z",
+  "updatedAt": "2024-09-30T02:45:54.650Z",
+  "id": "d9m5DC7NJba65T4p",
+  "name": "Automate Your RFP Process with OpenAI Assistants",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "51dbe3b4-42f6-43c9-85dc-42ae49be6ba9",
+      "name": "Get RFP Data",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        1083,
+        458
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c42e6bfc-a426-4d12-bf95-f3fe6e944631",
+      "name": "Item List Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserItemList",
+      "position": [
+        2220,
+        720
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "1703e9c3-f49e-4272-ad11-0b9d4e9a76c6",
+      "name": "For Each Question...",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        2540,
+        520
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "content": "## 1. API to Trigger Workflow\n[Read more about using Webhooks](https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/)\n\nThis workflow requires the user to submit the RFP document via an API request. It's a common pattern to use the webhook node for this purpose. Be sure to secure this webhook endpoint in production!",
+        "height": 508.1316876142587,
+        "width": 532.597092515486,
+        "color": 7
+      },
+      "id": "a54fa4ee-6f67-41a9-89fe-fd9f2bf094de",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        840,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"doc_title\": \"{{ $('Wait for Request').item.json.body.title }}\",\n  \"doc_filename\": \"{{ $('Wait for Request').item.json.body.id }} | {{ $('Wait for Request').item.json.body.title }} | {{ $now.format('yyyyMMddhhmmss') }}| RFP Response\",\n  \"reply_to\": \"{{ $('Wait for Request').item.json.body.reply_to }}\"\n}\n",
+        "options": {}
+      },
+      "id": "fdef005f-7838-4b8c-8af4-4b7c6f947ee2",
+      "name": "Set Variables",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1223,
+        458
+      ],
+      "typeVersion": 3.3
+    },
+    {
+      "parameters": {
+        "content": "## 2. Create a new Doc to Capture Responses For RFP Questions\n[Read more about working with Google Docs](https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.googledocs/)\n\nFor each RFP we process, let's create its very own document to store the results. It will serve as a draft document for the RFP response.",
+        "height": 418.29352785836636,
+        "width": 493.289385759178,
+        "color": 7
+      },
+      "id": "a64f6274-62fc-42fb-b7c7-5aa85746c621",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1400,
+        328.4241711284922
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "folderId": "=1y0I8MH32maIWCJh767mRE_NMHC6A3bUu",
+        "title": "={{ $json.doc_filename }}"
+      },
+      "id": "2b3df6af-c1ab-44a1-8907-425944294477",
+      "name": "Create new RFP Response Document",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        1500,
+        520
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## 3. Identifying Questions using AI\n[Read more about Question & Answer Chain](https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.chainretrievalqa/)\n\nUsing the power of LLMs, we're able to extract the RFP questionnaire regardless of original formatting or layout. This allows AutoRFP to handle a wide range of RFPs without requiring explicit extraction rules for edge cases.\n\nAdditionally, We'll use the Input List Output Parser to return a list of questions for further processing.",
+        "height": 599.9895116376663,
+        "width": 500.1029039641811,
+        "color": 7
+      },
+      "id": "0bf30bef-2910-432b-b5eb-dee3fe39b797",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1920,
+        290.52747078833045
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 4. Generating Question & Answer Pairs with AI\n[Read more about using OpenAI Assistants in n8n](https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-langchain.openai/)\n\nBy preparing an OpenAI Assistant with marketing material and sales documents about our company and business, we are able to use AI to answer RFP questions with the accurate and relevant context. Potentially allowing sales teams to increase the number of RFPs they can reply to.\n\nThis portion of the workflow loops through and answers each question individually for better answers. We can record the Question and Answer pairings to the RFP response document we created earlier.",
+        "height": 600.3660610069576,
+        "width": 746.3888903304862,
+        "color": 7
+      },
+      "id": "1c064047-1f6a-47c8-bb49-85b4d6f8e854",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2460,
+        264.6694406583787
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e663ba01-e9a6-4247-9d97-8f796d29d72a",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2040,
+        720
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Try It Out!\n\n**This workflow does the following:**\n* Receives a RFP document via webhook\n* Creates a new RFP response document via Google Docs\n* Uses LLMs to extract the questions from the RFP document into a questions list\n* Loops through each question and uses an OpenAI Assistant to generate an answer. Saving each answer into the response document.\n* Once complete, sends a gmail and slack notification to the team.\n\n\n📃**Example Documents**\nTo run this workflow, you'll need to following 2 documents:\n* [RFP Document](https://drive.google.com/file/d/1G42h4Vz2lBuiNCnOiXF_-EBP1MaIEVq5/view?usp=sharing)\n* [Example Company Document](https://drive.google.com/file/d/16WywCYcxBgYHXB3TY3wXUTyfyG2n_BA0/view?usp=sharing)\n\n### Need Help?\nJoin the [Discord](https://discord.com/invite/XPKeKXeB7d) or ask in the [Forum](https://community.n8n.io/)!\n\nHappy Hacking!",
+        "height": 515.8006969458895,
+        "width": 421.778219154496
+      },
+      "id": "ec0b439e-9fd8-4960-b8bb-04f4f7814a0a",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 5. Send Notification Once Completed\n[Read more about using Slack](https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.slack)\n\n\nFinally, we can use a number of ways to notify the sales team when the process is complete. Here, we've opted to send the requesting user an email with a link to the RFP response document.",
+        "height": 390.51033452105344,
+        "width": 474.3513281516049,
+        "color": 7
+      },
+      "id": "244ff32d-9bc4-4a67-a6c2-4a7dc308058e",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3240,
+        260
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "RFP-channel"
+        },
+        "text": "=RFP document \"{{ $('Set Variables').item.json.title }}\" completed!",
+        "otherOptions": {}
+      },
+      "id": "94243b69-43b8-4731-9a6b-2934db832cc6",
+      "name": "Send Chat Notification",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        3520,
+        460
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Set Variables').item.json.reply_to }}",
+        "subject": "=RFP Questionnaire \"{{ $('Set Variables').item.json.title }}\" Completed!",
+        "emailType": "text",
+        "message": "=Your RFP document \"{{ $('Set Variables').item.json.title }}\" is now complete!",
+        "options": {}
+      },
+      "id": "391d7e07-2a6d-4c4d-bf42-9cc5466cc1b5",
+      "name": "Send Email Notification",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        3320,
+        460
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "=Title: {{ $('Set Variables').item.json.doc_title }}\nDate generated: {{ $now.format(\"yyyy-MM-dd @ hh:mm\") }}\nRequested by: {{ $('Set Variables').item.json.reply_to }}\nExecution Id: http://localhost:5678/workflow/{{ $workflow.id }}/executions/{{ $execution.id }}\n\n---\n\n"
+            }
+          ]
+        }
+      },
+      "id": "34115f45-21ff-49a0-95f4-1fed53b53583",
+      "name": "Add Metadata to Response Doc",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        1680,
+        520
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n🚨**Required**\n* Use a tool such as Postman to send data to the webhook.",
+        "height": 306.5264325350084,
+        "width": 192.30781285767205
+      },
+      "id": "f285d896-ba15-4f8a-b041-7cbcbe2e1050",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        863,
+        418
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $('Create new RFP Response Document').item.json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $runIndex+1 }}. {{ $json.content }}\n{{ $json.output }}\n\n"
+            }
+          ]
+        }
+      },
+      "id": "b6e4e40e-b10b-48f2-bfe2-1ad38b1c6518",
+      "name": "Record Question & Answer in Response Doc",
+      "type": "n8n-nodes-base.googleDocs",
+      "position": [
+        3020,
+        640
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n🚨**Required**\nYou'll need to create an OpenAI Assistant to use this workflow.\n* Sign up for [OpenAI Dashboard](https://platform.openai.com) if you haven't already.\n* Create an [OpenAI Assistant](https://platform.openai.com/playground/assistants)\n* Upload the [example company doc](https://drive.google.com/file/d/16WywCYcxBgYHXB3TY3wXUTyfyG2n_BA0/view?usp=sharing) to the assistant.\n\nThe assistant will use the company doc to answer the questions.",
+        "height": 481.01365258903786,
+        "width": 306.8994213707367
+      },
+      "id": "ae8cc28f-4fd3-41d7-8a30-2675f58d1067",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2680,
+        620
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "🚨**Required**\n* Update the email address to send to in Gmail Node.\n* Update the channel and message for Slack.",
+        "height": 94.04968721739164,
+        "width": 386.79263167741857
+      },
+      "id": "81825554-5cbe-469b-8511-a92d5ea165cb",
+      "name": "Sticky Note8",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3280,
+        640
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "assistant",
+        "assistantId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "asst_QBI5lLKOsjktr3DRB4MwrgZd",
+          "cachedResultName": "Nexus Digital Solutions Bot"
+        },
+        "prompt": "define",
+        "text": "={{ $json.response.text }}",
+        "options": {}
+      },
+      "id": "25a57ca0-6789-499c-873b-07aba40530ed",
+      "name": "Answer Question with Context",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        2700,
+        640
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "35e874df-2904-494e-a9f5-5a3f20f517f8",
+        "options": {}
+      },
+      "id": "1b4cc83b-a793-47c1-9dd6-0d7484db07b4",
+      "name": "Wait for Request",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        903,
+        458
+      ],
+      "webhookId": "35e874df-2904-494e-a9f5-5a3f20f517f8",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You have been given a RFP document as part of a tender process of a buyer. Please extract all questions intended for the supplier. You must ensure the questions extracted are exactly has they are written in the RFP document.\n\n<RFP>{{ $('Get RFP Data').item.json.text }}<RFP>",
+        "hasOutputParser": true
+      },
+      "id": "2f97e3e6-c100-4045-bcb3-6fbd17cfb420",
+      "name": "Extract Questions From RFP",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        2040,
+        560
+      ],
+      "typeVersion": 1.4
+    },
+    {
+      "parameters": {
+        "content": "### Example Webhook Request\ncurl --location 'https://<n8n_webhook_url>' \\\n--form 'id=\"RFP001\"' \\\n--form 'title=\"BlueChip Travel and StarBus Web Services\"' \\\n--form 'reply_to=\"jim@example.com\"' \\\n--form 'data=@\"k9pnbALxX/RFP Questionnaire.pdf\"'\n",
+        "height": 157.64231937074243,
+        "width": 529.9947173986736,
+        "color": 5
+      },
+      "id": "4945b975-ac84-406e-8482-44cfa5679ef9",
+      "name": "Sticky Note9",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        840,
+        780
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Get RFP Data": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Create new RFP Response Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Request": {
+      "main": [
+        [
+          {
+            "node": "Get RFP Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Questions From RFP",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "For Each Question...": {
+      "main": [
+        [
+          {
+            "node": "Send Email Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Answer Question with Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item List Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extract Questions From RFP",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email Notification": {
+      "main": [
+        [
+          {
+            "node": "Send Chat Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Questions From RFP": {
+      "main": [
+        [
+          {
+            "node": "For Each Question...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Metadata to Response Doc": {
+      "main": [
+        [
+          {
+            "node": "Extract Questions From RFP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer Question with Context": {
+      "main": [
+        [
+          {
+            "node": "Record Question & Answer in Response Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create new RFP Response Document": {
+      "main": [
+        [
+          {
+            "node": "Add Metadata to Response Doc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Question & Answer in Response Doc": {
+      "main": [
+        [
+          {
+            "node": "For Each Question...",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "2321"
+  },
+  "pinData": {},
+  "versionId": "121b79f6-9813-4d8e-896b-eed4487bfd06",
+  "triggerCount": 0,
+  "tags": []
+}

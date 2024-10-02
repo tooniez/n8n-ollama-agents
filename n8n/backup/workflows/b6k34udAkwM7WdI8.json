@@ -1,6 +1,6 @@
 {
   "createdAt": "2024-09-29T13:41:09.072Z",
-  "updatedAt": "2024-09-29T13:42:27.792Z",
+  "updatedAt": "2024-09-29T15:54:09.772Z",
   "id": "b6k34udAkwM7WdI8",
   "name": "Basic AI Agent Chat",
   "active": false,
@@ -52,14 +52,20 @@
     },
     {
       "parameters": {},
-      "id": "4767d8cd-a812-4bd3-846a-04c4560a5683",
-      "name": "Window Buffer Memory",
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.2,
+      "id": "8d4d4a4e-13c6-43a4-81e1-fd883745aad2",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.1,
       "position": [
-        1080,
-        560
-      ]
+        980,
+        440
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "U3yf2vwqE9Plx2VJ",
+          "name": "Postgres account"
+        }
+      }
     }
   ],
   "connections": {
@@ -85,7 +91,7 @@
         ]
       ]
     },
-    "Window Buffer Memory": {
+    "Postgres Chat Memory": {
       "ai_memory": [
         [
           {
@@ -106,7 +112,7 @@
     "instanceId": "558d88703fb65b2d0e44613bc35916258b0f0bf983c5d4730c00c424b77ca36a"
   },
   "pinData": {},
-  "versionId": "3967bb33-4c01-4a3c-a312-63bd5aa2ec5f",
-  "triggerCount": 0,
+  "versionId": "e5c1e188-a8e8-4eba-be88-154b25cebe8b",
+  "triggerCount": 2,
   "tags": []
 }
