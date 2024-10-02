@@ -124,7 +124,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
-    networks: ['n8n-ai-network']
+    networks: ['demo']
     restart: unless-stopped
     environment:
       - REDIS_HOST
