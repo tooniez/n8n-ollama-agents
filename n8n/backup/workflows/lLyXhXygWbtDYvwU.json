@@ -1,0 +1,268 @@
+{
+  "createdAt": "2024-09-30T03:58:54.872Z",
+  "updatedAt": "2024-10-07T02:11:23.845Z",
+  "id": "lLyXhXygWbtDYvwU",
+  "name": "Share YouTube Videos with Ollama Summaries on Discord",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://www.youtube.com/feeds/videos.xml?channel_id=UC08Fah8EIryeOZRkjBRohcQ"
+      },
+      "id": "48c87027-7eea-40b9-a73c-4e002b748783",
+      "name": "YouTube Video Trigger",
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "position": [
+        440,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/youtube/v3/captions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "videoId",
+              "value": "={{ $json.id.match(/(?:[^:]*:){2}\\s*(.*)/)[1] }}"
+            },
+            {
+              "name": "part",
+              "value": "snippet"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "56166228-b365-4043-b48c-098b4de71f6f",
+      "name": "Retrieve Caption Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        660,
+        480
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "url": "=https://www.googleapis.com/youtube/v3/captions/{{ $json.caption.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "youTubeOAuth2Api",
+        "options": {}
+      },
+      "id": "c029ac6f-3071-4045-83f6-2dede0c1f358",
+      "name": "Download Captions",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1100,
+        480
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "content",
+        "options": {}
+      },
+      "id": "8b45dc14-f10f-4b50-8ca6-a9d0ccfee4dc",
+      "name": "Caption File Conversion",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        1320,
+        480
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=🌟 New Video Alert! 🌟\n\n**{{ $('YouTube Video Trigger').item.json[\"title\"] }}**\n\n*What’s it about?*\n\n{{ $json[\"message\"][\"content\"] }}\n\n[Watch NOW]({{ $('YouTube Video Trigger').item.json[\"link\"] }}) and remember to share your thoughts!",
+        "options": {}
+      },
+      "id": "2c83f230-bc37-4efb-9ee9-842bcefa0ef4",
+      "name": "Post to Discord",
+      "type": "n8n-nodes-base.discord",
+      "position": [
+        1880,
+        480
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eaf7dcb5-91cf-4405-917b-38845f0ef78d",
+              "name": "caption",
+              "type": "object",
+              "value": "={{ $jmespath( $json.items, \"[?snippet.language == 'en'] | [0]\" ) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8408887e-1d89-402c-b350-93d5f96f4dea",
+      "name": "Find English Captions",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        880,
+        480
+      ],
+      "typeVersion": 3.3
+    },
+    {
+      "parameters": {
+        "content": "### Summarise Your YouTube Videos with AI for Discord\n\n📽️ [Watch the Video Tutorial](https://mrc.fm/ai2d)\n\n* Add your [YouTube channel ID](https://www.youtube.com/account_advanced) to the URL in the first node: `https://www.youtube.com/feeds/videos.xml?channel_id=YOUR_CHANNEL_ID`.\n\n* Ensure authorization with the YouTube channel that you want to download captions from.",
+        "height": 417.2722371967648,
+        "width": 448.11859838274916
+      },
+      "id": "71cc0977-1695-4797-9df2-b0a98e41d3de",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": "llama3.2:latest",
+        "options": {}
+      },
+      "id": "47b93193-3bed-45d6-8ceb-cc3c4b6561fa",
+      "name": "Ollama Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        900
+      ],
+      "credentials": {
+        "ollamaApi": {
+          "id": "xHuYe0MDGOs9IpBW",
+          "name": "Local Ollama service"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "Summarise this transcript into three bullet points to sum up what the video is about and why someone should watch it: {{ $json[\"content\"] }}",
+        "options": {}
+      },
+      "id": "a8564f13-c790-4c0b-a5b1-606ce27adb20",
+      "name": "Caption Summary with Ollama",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        1520,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "Download Captions": {
+      "main": [
+        [
+          {
+            "node": "Caption File Conversion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find English Captions": {
+      "main": [
+        [
+          {
+            "node": "Download Captions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Caption Data": {
+      "main": [
+        [
+          {
+            "node": "Find English Captions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube Video Trigger": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Caption Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Caption File Conversion": {
+      "main": [
+        [
+          {
+            "node": "Caption Summary with Ollama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Caption Summary with Ollama",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Caption Summary with Ollama": {
+      "main": [
+        [
+          {
+            "node": "Post to Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "2249"
+  },
+  "pinData": {},
+  "versionId": "be54add7-4d7a-457a-8ee6-448882b782e9",
+  "triggerCount": 0,
+  "tags": []
+}

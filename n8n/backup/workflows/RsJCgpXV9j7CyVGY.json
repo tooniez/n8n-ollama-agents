@@ -1,0 +1,101 @@
+{
+  "createdAt": "2024-10-08T04:36:20.883Z",
+  "updatedAt": "2024-10-08T04:36:20.883Z",
+  "id": "RsJCgpXV9j7CyVGY",
+  "name": "Use an open-source LLM (via HuggingFace)",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "87ca4479-7433-44d1-95ff-3cf8c13d011e",
+      "name": "On new manual Chat Message",
+      "type": "@n8n/n8n-nodes-langchain.manualChatTrigger",
+      "position": [
+        660,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "prompt": "=You are a helpful assistant. Please reply politely to the users.\nUse emojis and a text.\nQ: {{ $json.input }}\nA: "
+      },
+      "id": "4a60cb10-c5d8-4850-941b-ecdd07cd32f1",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        880,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "model": "mistralai/Mistral-7B-Instruct-v0.1",
+        "options": {
+          "frequencyPenalty": 2,
+          "maxTokens": 512,
+          "temperature": 0.8
+        }
+      },
+      "id": "a32c19bf-0f0e-4c9f-99ba-79836f10e899",
+      "name": "Hugging Face Inference Model",
+      "type": "@n8n/n8n-nodes-langchain.lmOpenHuggingFaceInference",
+      "position": [
+        900,
+        780
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## This is an example of basic LLM Chain connected to an open-source model\n### The Chain is connected to the Mistral-7B-Instruct-v0.1 model, but you can change this\n\nPlease note the initial prompt that guides the model:\n```\nYou are a helpful assistant.\nPlease reply politely to the users.\nUse emojis and a text.\nQ: {{ $json.input }}\nA: \n```\n\nThis way the model \"knows\" that it needs to answer the question right after the `A: `.\n\nSince Hugging Face node is this is an inference mode, it does not support LangChain Agents at the moment. Please use [Ollama Chat Model](https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.lmchatollama/) node for that",
+        "height": 317,
+        "width": 1083
+      },
+      "id": "157d6fc5-1523-43fc-937e-92c67b1f3991",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        240
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "On new manual Chat Message": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hugging Face Inference Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "1980"
+  },
+  "pinData": {},
+  "versionId": "c74d6e38-061a-45bd-be2e-4cad06af3344",
+  "triggerCount": 0,
+  "tags": []
+}

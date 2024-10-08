@@ -1,0 +1,873 @@
+{
+  "createdAt": "2024-10-08T04:36:35.016Z",
+  "updatedAt": "2024-10-08T04:36:35.016Z",
+  "id": "oLE0puhiSrcGAUV3",
+  "name": "Scrape and summarize posts of a news site without RSS feed using AI and save them to a NocoDB",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "data",
+              "cssSelector": "=div:nth-child(9) > div:nth-child(3) > a:nth-child(2)",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true
+        }
+      },
+      "id": "97711d12-20de-40aa-b994-d2b10f20a5e5",
+      "name": "Extract the HTML with the right css class",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        418.404803912782,
+        544
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "model": "gpt-4-1106-preview",
+        "prompt": {
+          "messages": [
+            {
+              "content": "=Create a summary in less than 70 words {{ $json[\"content\"] }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "id": "b874b570-daae-4878-b525-07ac30756eb1",
+      "name": "Summary",
+      "type": "n8n-nodes-base.openAi",
+      "position": [
+        38.40480391278197,
+        984
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "model": "gpt-4-1106-preview",
+        "prompt": {
+          "messages": [
+            {
+              "content": "=name the 3 most important technical keywords in {{ $json[\"content\"] }} ? just name them without any explanations or other sentences"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "id": "72696278-2d44-4073-936a-6fe9df1bc7d8",
+      "name": "Keywords",
+      "type": "n8n-nodes-base.openAi",
+      "position": [
+        38.40480391278197,
+        1164
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "keywords",
+              "stringValue": "={{ $json[\"message\"][\"content\"] }}"
+            }
+          ]
+        },
+        "include": "none",
+        "options": {}
+      },
+      "id": "0bfdb3be-76ef-4bb3-902f-f0869342b83c",
+      "name": "Rename keywords",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        218.40480391278197,
+        1164
+      ],
+      "typeVersion": 3.1
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "=summary",
+              "stringValue": "={{ $json[\"message\"][\"content\"] }}"
+            }
+          ]
+        },
+        "include": "none",
+        "options": {}
+      },
+      "id": "0387cf34-41c9-4729-8570-1db7b17c42f4",
+      "name": "Rename Summary",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        218.40480391278197,
+        984
+      ],
+      "typeVersion": 3.1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "5fa1702c-f0bf-4524-bc8f-6f550dd83f1e",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        438.404803912782,
+        1104
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "data",
+              "cssSelector": "div:nth-child(9) > div:nth-child(2) > span:nth-child(1)",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "25128a71-b0d5-49a4-adb8-c3fbe03c0a85",
+      "name": "Extract date",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        418.404803912782,
+        384
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "const currentDate = new Date();\nconst sevenDaysAgo = new Date(currentDate.setDate(currentDate.getDate() - 70)); // Change the number of days going back to your liking (e.g. from -7 to -1) -> BUT sync with the cron job (first node)\n\nconst filteredItems = items.filter(item => {\n    const postDate = new Date(item.json[\"Date\"]); // Assuming \"Date\" is the field name in the extracted html\n    return postDate >= sevenDaysAgo;\n});\n\nreturn filteredItems;\n"
+      },
+      "id": "138b3bd6-494a-49b9-b5b8-c9febcfef9fb",
+      "name": "Select posts of last 7 days",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1038.404803912782,
+        544
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "1ace953b-e298-4fc2-8970-327f736889ec",
+      "name": "Merge date & links",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        818.404803912782,
+        544
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "url": "={{ $json[\"Link\"] }}",
+        "options": {}
+      },
+      "id": "bba692fc-c225-41be-a969-179d8b99c071",
+      "name": "HTTP Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1238.404803912782,
+        544
+      ],
+      "typeVersion": 4.1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "26671065-631f-4684-9ee1-15f26b4cf1e4",
+      "name": "Merge Content with Date & Link",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        1418.404803912782,
+        804
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": "h1.fl-heading > span:nth-child(1)"
+            },
+            {
+              "key": "content",
+              "cssSelector": ".fl-node-5c7574ae7d5c6 > div:nth-child(1)"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "79beb744-97b8-4072-824a-6736b0a080ef",
+      "name": "Extract individual posts",
+      "type": "n8n-nodes-base.html",
+      "position": [
+        1418.404803912782,
+        544
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Select only the newest news: todays date going back xy days",
+        "height": 276.31054308676767,
+        "width": 180.9747474601832
+      },
+      "id": "e89d9de5-875b-453e-825a-26f2bebcc8df",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        998.404803912782,
+        437
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "8a603f2f-4208-48c7-b169-e5613f13fa7d",
+      "name": "Merge ChatGPT output with Date & Link",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        738.404803912782,
+        1104
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nExtracting the individual links of the press release page in order to retrieve the individual posts on their respective **url**",
+        "height": 304.2550759710132,
+        "width": 182.2748213508401
+      },
+      "id": "e1036421-9ce1-4121-a692-602410ec7c95",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        378.6245454571672,
+        539.2779797968146
+      ],
+      "typeVersion": 1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "Extracting the dates of the posts of the press release page.\nThe right CSS selector has to be chosen.\n[More info on datagrab.io](https://datagrab.io/blog/guide-to-css-selectors-for-web-scraping/)",
+        "height": 289.463147786618,
+        "width": 178.75185894039254
+      },
+      "id": "3655ab22-6a17-429a-9d9b-d96bbcc78fee",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# Scraping posts of a news site without RSS feed\n\n\nThe [News Site](https://www.colt.net/resources/type/news/) from Colt, a telecom company, does not offer an RSS feed, therefore web scraping is the \nchoice to extract and process the news.\n\nThe goal is to get only the newest posts, a summary of each post and their respective (technical) keywords.\n\nNote that the news site offers the links to each news post, but not the individual news. We collect first the links and dates of each post before extracting the newest ones.\n\nThe result is sent to a SQL database, in this case a NocoDB database.\n\nThis process happens each week thru a cron job.\n\n**Requirements**:\n- Basic understanding of CSS selectors and how to get them via browser (usually: right click &rarr; inspect)\n- ChatGPT API account - normal account is not sufficient\n- A NocoDB database - of course you may choose any type of output target\n\n**Assumptions**:\n- CSS selectors work on the news site\n- The post has a date with own CSS selector - meaning date is not part of the news content\n\n**\"Warnings\"**\n- Not every site likes to be scraped, especially not in high frequency\n- Each website is structured in different ways, the workflow may then need several adaptations.\n\n\nHappy about any suggestion to improve. You may contact me on **Mastodon**: https://bonn.social/@askans",
+        "height": 1127.2017245821128,
+        "width": 334.4404040637068
+      },
+      "id": "2e27fb4c-426a-41e1-b5fb-9b2d78acd2a7",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -381.595196087218,
+        244.17838239248226
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Weekly cron job",
+        "height": 237.91333335255808,
+        "width": 153.90180146729315
+      },
+      "id": "d43bd5b7-2aff-4a07-8aca-ca4747ec6c4d",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -9.439943576238193,
+        464
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "The html of the news site is being retrieved: https://www.colt.net/resources/type/news/",
+        "height": 241.454848504947,
+        "width": 185.41515152389002
+      },
+      "id": "e732d136-fcf1-4fc3-8bb6-bdcea3c78d9e",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        158.40480391278197,
+        464
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "As the extraction are returned as arrays, they transformed into individual JSON items to enable looping with other nodes",
+        "height": 469.2923233086395,
+        "width": 187.3613302133812
+      },
+      "id": "d5e29ec3-5ef2-42f3-b316-9350644dbba4",
+      "name": "Sticky Note6",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        578.404803912782,
+        238
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "The links of the individual posts and the dates of the posts ",
+        "height": 274.50898992724416,
+        "width": 150
+      },
+      "id": "1af15c45-32c0-4abf-a35d-be7206823569",
+      "name": "Sticky Note7",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        798.404803912782,
+        440.458484847611
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "url": "https://www.colt.net/resources/type/news/",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "f7c42748-f227-42d0-a9e2-fcb16dbd0f75",
+      "name": "Retrieve the web page for further processsing",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        198.40480391278197,
+        544
+      ],
+      "typeVersion": 4.1
+    },
+    {
+      "parameters": {
+        "content": "Get the html of each individual **newest** post",
+        "height": 272.1479798256519,
+        "width": 155.0036363426638
+      },
+      "id": "b2c36f26-8221-478f-a4b0-22758b1e5e58",
+      "name": "Sticky Note9",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1210.404803912782,
+        444
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Extracting the title & content (text) of each individual news post with the right CSS selector",
+        "height": 269.2504410842093,
+        "width": 184.07417896879767
+      },
+      "id": "6ae05c31-c09a-4b4e-a013-41571937bc39",
+      "name": "Sticky Note10",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1378.404803912782,
+        444
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Merge link to url, date with content (text) and title of each news psot",
+        "height": 234.13422787857044,
+        "width": 191.87778190338406
+      },
+      "id": "e2da76d4-0c8c-4c61-924f-50aa9387e9ab",
+      "name": "Sticky Note11",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1378.404803912782,
+        724
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Create a summary of each news post with ChatGPT. You need a ChatGPT API account for this",
+        "height": 256.2444361932317,
+        "width": 150
+      },
+      "id": "c124aaac-dce6-4658-9027-bdfe5c0c81e6",
+      "name": "Sticky Note12",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        11.178382392482376,
+        875.0681740778202
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "\n\n\n\n\n\n\n\n\n\n\n\n\n\nGet the 3 keywords of each news post",
+        "height": 218.52702200939785,
+        "width": 152.85976723045226
+      },
+      "id": "c9037e74-007b-4e44-b7f9-90e78b853eb5",
+      "name": "Sticky Note13",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        8.809607825563944,
+        1154.7495589157902
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Just a renaming of data fields and eliminating unnecessary ones",
+        "height": 489.05192374172555,
+        "width": 182.7735784797001
+      },
+      "id": "756397d9-de80-4114-9dee-b4f4b9593333",
+      "name": "Sticky Note14",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        178.40480391278197,
+        884
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "Merge summary and keywords of each news post",
+        "height": 254.94383570413422,
+        "width": 169.7675735887227
+      },
+      "id": "a0dcb254-f064-45ed-8e22-30a6d079085b",
+      "name": "Sticky Note15",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        398.404803912782,
+        1024
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                3
+              ],
+              "triggerAtHour": 4,
+              "triggerAtMinute": 32
+            }
+          ]
+        }
+      },
+      "id": "82993166-b273-4b82-a954-554c6892f825",
+      "name": "Schedule Trigger each week",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        18.404803912781972,
+        544
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "Add title, link and date to summary and keywords of each news post",
+        "height": 260.5279202647822,
+        "width": 180.1723775015045
+      },
+      "id": "3d670eb9-5a36-4cd9-8d2c-40adf848485e",
+      "name": "Sticky Note16",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        698.404803912782,
+        1021.5081090810816
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "authentication": "nocoDbApiToken",
+        "operation": "create",
+        "projectId": "prqu4e8bjj4bv1j",
+        "table": "mhbalmu9aaqcun6",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldName": "=News_Source",
+              "fieldValue": "=Colt"
+            },
+            {
+              "fieldName": "Title",
+              "fieldValue": "={{ $json[\"title\"] }}"
+            },
+            {
+              "fieldName": "Date",
+              "fieldValue": "={{ $json[\"Date\"] }}"
+            },
+            {
+              "fieldName": "Link",
+              "fieldValue": "={{ $json[\"Link\"] }}"
+            },
+            {
+              "fieldName": "Summary",
+              "fieldValue": "={{ $json[\"summary\"] }}"
+            },
+            {
+              "fieldName": "Keywords",
+              "fieldValue": "={{ $json[\"keywords\"] }}"
+            }
+          ]
+        }
+      },
+      "id": "62021393-e988-4834-9fa2-75a957b42890",
+      "name": "NocoDB news database",
+      "type": "n8n-nodes-base.nocoDb",
+      "position": [
+        978.404803912782,
+        1104
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## News summaries and keywords &rarr; database\n\n[NocoDB](https://nocodb.com/) is an SQL database, here we store the news summaries and keywords for further processing. Any other output target can be chosen here, e.g. e-mail, Excel etc.\n\nYou need first have that database structured before appending the news summaries and additional fields. The you can shape this node.\n\nSome fields may be edited in the database itself (e.g. relevance of the news to you) and may be filled therefore with a default value or not at all",
+        "height": 268.5678114630957,
+        "width": 483.95825869942666
+      },
+      "id": "e59e9fab-10a7-470b-afa6-e1d4b4e57723",
+      "name": "Sticky Note17",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1198.404803912782,
+        1024
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 268.56781146309544,
+        "width": 262.99083066277313
+      },
+      "id": "253b414b-9a5b-4a25-892b-9aa011d55d28",
+      "name": "Sticky Note18",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        938.404803912782,
+        1024
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {
+          "destinationFieldName": "Link"
+        }
+      },
+      "id": "438e8dde-ce0a-4e5e-8d62-d735d19ec189",
+      "name": "Create single link items",
+      "type": "n8n-nodes-base.itemLists",
+      "position": [
+        618.404803912782,
+        544
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {
+          "destinationFieldName": "Date"
+        }
+      },
+      "id": "d721776b-fefc-4e72-91ef-6710f10b0393",
+      "name": "Create single date items",
+      "type": "n8n-nodes-base.itemLists",
+      "position": [
+        618.404803912782,
+        384
+      ],
+      "typeVersion": 3
+    }
+  ],
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge ChatGPT output with Date & Link",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Summary": {
+      "main": [
+        [
+          {
+            "node": "Rename Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keywords": {
+      "main": [
+        [
+          {
+            "node": "Rename keywords",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract date": {
+      "main": [
+        [
+          {
+            "node": "Create single date items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Extract individual posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Summary": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename keywords": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge date & links": {
+      "main": [
+        [
+          {
+            "node": "Select posts of last 7 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create single date items": {
+      "main": [
+        [
+          {
+            "node": "Merge date & links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create single link items": {
+      "main": [
+        [
+          {
+            "node": "Merge date & links",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract individual posts": {
+      "main": [
+        [
+          {
+            "node": "Merge Content with Date & Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger each week": {
+      "main": [
+        [
+          {
+            "node": "Retrieve the web page for further processsing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select posts of last 7 days": {
+      "main": [
+        [
+          {
+            "node": "Merge Content with Date & Link",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Content with Date & Link": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Keywords",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge ChatGPT output with Date & Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge ChatGPT output with Date & Link": {
+      "main": [
+        [
+          {
+            "node": "NocoDB news database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract the HTML with the right css class": {
+      "main": [
+        [
+          {
+            "node": "Create single link items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve the web page for further processsing": {
+      "main": [
+        [
+          {
+            "node": "Extract the HTML with the right css class",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "2180"
+  },
+  "pinData": {},
+  "versionId": "dfdf505f-5ba2-4f49-abf3-d6f0feec2690",
+  "triggerCount": 0,
+  "tags": []
+}

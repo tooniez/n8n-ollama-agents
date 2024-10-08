@@ -1,0 +1,318 @@
+{
+  "createdAt": "2024-10-08T04:35:54.939Z",
+  "updatedAt": "2024-10-08T04:35:54.939Z",
+  "id": "0H7sEBDcj84RalOt",
+  "name": "Slack chatbot powered by AI",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "slack-gilfoyle",
+        "options": {}
+      },
+      "id": "50351a19-624e-4ff2-a31d-fb5ed064fae2",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        380,
+        240
+      ],
+      "webhookId": "28b84545-96aa-42f5-990b-aa8783a320ca",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Webhook').item.json.body.event.user }}"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "id": "78d5af93-3f09-463d-8e57-a72f5766a12c",
+      "name": "Slack",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1840,
+        225
+      ],
+      "typeVersion": 2.1
+    },
+    {
+      "parameters": {
+        "model": "gpt-4",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "id": "98ec8934-f2a1-484b-ac8c-921ef7f3efe5",
+      "name": "Chat OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1180,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $('Webhook').item.json.body.event.channel }}__gilfoyle",
+        "contextWindowLength": 30
+      },
+      "id": "0cd7299c-20f4-4249-a652-782eaf01b0c2",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        1480,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "11be2fb9-ac8a-4df8-893a-8bafaa267548",
+      "name": "Wikipedia",
+      "type": "@n8n/n8n-nodes-langchain.toolWikipedia",
+      "position": [
+        1840,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "74df71fd-6803-4ea3-a777-1714a51456b7",
+      "name": "No Operation, do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        1020,
+        260
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.body.event.bot_id }}",
+              "value2": "={{ undefined }}"
+            }
+          ]
+        }
+      },
+      "id": "420fe56f-9ef8-4c57-ac06-d8d88f37b49a",
+      "name": "Is user message",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        720,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Slack POSTs to Webhook on every message so we need to filter-out bot messages",
+        "height": 264.4999999999997,
+        "width": 542.581395348837
+      },
+      "id": "5a73e6d7-9792-4f78-b95e-5b04d13b1e00",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        640,
+        171.50000000000028
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "803394c4-dcc6-4040-b0ba-e93b48c410ab",
+      "name": "SerpAPI",
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "position": [
+        1720,
+        580
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Tools which Agent can use to accomplish the task\n",
+        "height": 228,
+        "width": 293
+      },
+      "id": "e18ae2f0-2b58-4423-ace0-a3bc49cb4a35",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1680,
+        500
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Conversation history is stored in memory using channel id as key",
+        "height": 233,
+        "width": 248
+      },
+      "id": "318040c2-630d-4dd8-8ed2-7ca758750d93",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1400,
+        500
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### The chat LM to process the prompt",
+        "height": 233,
+        "width": 260
+      },
+      "id": "1fbc5d2a-b78a-4803-ac76-a51c25aec92c",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1100,
+        500
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### Send agent's output as Slack message\n",
+        "height": 223,
+        "width": 280
+      },
+      "id": "8d37ed9f-cfb8-4938-ba4d-829c9fd53288",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1760,
+        165
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.body.event.text }}",
+        "options": {
+          "systemMessage": "You are Gilfoyle from Silicon Valley TV show. Amplify your bluntness and cynicism, tolerating zero incompetence. Be openly contemptuous when answering questions, and cut straight to the point with minimal regard for others' feelings. Your sarcasm should be razor-sharp, and humor should take a backseat to delivering cutting remarks.\\nDo your best to answer the questions. Feel free to use any tools available to look up relevant information, only if necessary. "
+        }
+      },
+      "id": "9d7494c4-1fff-4373-b3bd-90dc884656fd",
+      "name": "Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1300,
+        225
+      ],
+      "typeVersion": 1
+    }
+  ],
+  "connections": {
+    "Agent": {
+      "main": [
+        [
+          {
+            "node": "Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Is user message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wikipedia": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat OpenAI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is user message": {
+      "main": [
+        [
+          {
+            "node": "Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "1961"
+  },
+  "pinData": {},
+  "versionId": "dc32a363-b702-41d7-9727-5033914fb218",
+  "triggerCount": 0,
+  "tags": []
+}

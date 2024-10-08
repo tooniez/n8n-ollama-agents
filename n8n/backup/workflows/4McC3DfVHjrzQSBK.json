@@ -1,0 +1,399 @@
+{
+  "createdAt": "2024-10-08T04:39:24.504Z",
+  "updatedAt": "2024-10-08T04:39:24.504Z",
+  "id": "4McC3DfVHjrzQSBK",
+  "name": "AI Voice Chat using Webhook, Memory Manager, OpenAI, Google Gemini & ElevenLabs",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "86cbf150-df4f-42f7-b7b3-e03c32e6f23c",
+      "name": "Get Chat",
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "position": [
+        417,
+        438
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "user",
+              "message": "={{ $('OpenAI - Speech to Text').item.json[\"text\"] }}"
+            },
+            {
+              "type": "ai",
+              "message": "={{ $json.text }}"
+            }
+          ]
+        }
+      },
+      "id": "a9153a24-e902-4f29-9b83-447317ce3119",
+      "name": "Insert Chat",
+      "type": "@n8n/n8n-nodes-langchain.memoryManager",
+      "position": [
+        1257,
+        438
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "## Get Context",
+        "height": 238.4911357933579,
+        "width": 486.4746124819703,
+        "color": 6
+      },
+      "id": "f5c272d4-248b-45a5-87b5-eb659a865d05",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        381,
+        347
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## Save Context",
+        "height": 231.05945912581728,
+        "width": 321.2536584847704,
+        "color": 6
+      },
+      "id": "32ad17ca-0045-487d-9387-71c2e73629d4",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1227,
+        349
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "context",
+        "options": {}
+      },
+      "id": "17ae4f1a-6192-4c52-8157-3cb47b37e0fb",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        737,
+        438
+      ],
+      "typeVersion": 1,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "test-0dacb3b5-4bcd-47dd-8456-dcfd8c258204"
+      },
+      "id": "00b3081e-fbcd-489b-b45a-4e847c346594",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        797,
+        738
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "id": "55ca2790-e905-414a-a9f6-7d88a9e5807d",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        937,
+        738
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "id": "e8b3433f-b205-404c-9f05-504556d6b6dd",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        2277,
+        438
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.elevenlabs.io/v1/text-to-speech/{{voice id}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $('Basic LLM Chain').item.json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "de296743-5ac7-454b-bf3a-d020cc024511",
+      "name": "ElevenLabs - Generate Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1957,
+        438
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "content": "* ### For the Text-to-Speech part, we'll use ElevenLabs.io, which is free and offers a variety of voices to choose from. However, you can also use the OpenAI `\"Generate audio\"` node instead.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n* ### Since there is no pre-built node for `\"ElevenLabs\"` in n8n, we'll connect to it through its API using the \"HTTP Request\" node.\n\n## Prerequisites:\n* ### `\"ElevenLabs API Key\"` (you can obtain it from their website).\n* ### `\"Voice ID\"` (you can also get it from ElevenLabs' \"Voice Library\").\n## Setup\n* ### In the URL parameter, replace \"{{voice id}}\" at the end of the URL with the Voice ID you obtained from ElevenLabs.io.\n* ### To set up your API Key, add custom authentication and include the following `JSON` with your acual ElevenLabs API Key:\n```json\n{\n  \"headers\": {\n    \"xi-api-key\": \"put-your-API-Key-here\"\n  }\n}\n```",
+        "height": 843.7602354099661,
+        "width": 468.73250812192407
+      },
+      "id": "214e15f2-8a16-4598-b4ac-9fc2ec6545e6",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1757,
+        278
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "### The \"Get Chat,\" \"Insert Chat,\" and \"Window Buffer Memory\" nodes will help the LLM model maintain context throughout the conversation.",
+        "height": 91.01435855269375,
+        "width": 487.4293487597613,
+        "color": 6
+      },
+      "id": "94ad934c-4a13-47b1-83a5-76fab43b3a47",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        380,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "id": "0a96f48d-0d8b-4240-9eab-a681bfd4c8b5",
+      "name": "Limit",
+      "type": "n8n-nodes-base.limit",
+      "position": [
+        1617,
+        438
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('OpenAI - Speech to Text').item.json[\"text\"] }}",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "AIMessagePromptTemplate",
+              "message": "=To maintain context and fully understand the user's question, always review the previous conversation between you and him before providing an answer.\nThis is the previous conversation:\n{{ $('Aggregate').item.json[\"context\"].map(m => `\nHuman: ${m.human || 'undefined'}\nAI Assistant: ${m.ai || 'undefined'}\n`).join('') }}"
+            }
+          ]
+        }
+      },
+      "id": "9a5d4ddb-6403-4758-858e-9fbe10c421a9",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        917,
+        438
+      ],
+      "typeVersion": 1.4
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "voice_message",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f2f99895-9678-41b8-ad28-db40e1e23dc0",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        37,
+        438
+      ],
+      "webhookId": "e9f611eb-a8dd-4520-8d24-9f36deaca528",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "binaryPropertyName": "voice_message",
+        "options": {}
+      },
+      "id": "d9a5fb04-4c02-4da4-b690-7b0ecd0ae052",
+      "name": "OpenAI - Speech to Text",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        217,
+        438
+      ],
+      "typeVersion": 1.3
+    }
+  ],
+  "connections": {
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "ElevenLabs - Generate Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "OpenAI - Speech to Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Chat": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Chat": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Insert Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Insert Chat",
+            "type": "ai_memory",
+            "index": 0
+          },
+          {
+            "node": "Get Chat",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI - Speech to Text": {
+      "main": [
+        [
+          {
+            "node": "Get Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ElevenLabs - Generate Audio": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "2405"
+  },
+  "pinData": {},
+  "versionId": "9e2b27a1-2fdb-47b6-af09-b63356696d78",
+  "triggerCount": 0,
+  "tags": []
+}

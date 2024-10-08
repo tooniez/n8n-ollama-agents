@@ -1,10 +1,24 @@
 {
-  "createdAt": "2024-09-29T15:37:40.200Z",
-  "updatedAt": "2024-10-07T01:53:24.580Z",
-  "id": "8YuWkseVYYKwaGjl",
-  "name": "Siri/Tobby AI Agent Apple Shortcut",
-  "active": true,
+  "createdAt": "2024-10-08T04:40:25.407Z",
+  "updatedAt": "2024-10-08T04:40:25.407Z",
+  "id": "f9kivmtCltyKCWYs",
+  "name": "Siri AI Agent: Apple Shortcuts powered voice template",
+  "active": false,
   "nodes": [
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {}
+      },
+      "id": "b24c6e28-3c9e-4069-9e87-49b2efd47257",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        1380,
+        660
+      ],
+      "typeVersion": 1
+    },
     {
       "parameters": {
         "content": "![Siri Template Thumbnail](https://uploads.n8n.io/devrel/wf-siri-header.png#full-width)\n## \"Hey Siri, Ask Agent\" workflow\n**Made by [Max Tkacz](https://www.linkedin.com/in/maxtkacz) during the [30 Day AI Sprint](https://30dayaisprint.notion.site/)**\n\nThis template integrates with Apple Shortcuts to trigger an n8n AI Agent via a \"Hey Siri\" command. The shortcut prompts for spoken input, transcribes it, and sends it to the workflow's `When Called by Apple Shortcut` Webhook trigger. The AI Agent processes the input and Siri dictates the response back to you.\n\nThe workflow also passes the current date and time to the `AI Agent`, which you can extend with additional context, like data from an App node, for more customized responses.\n\n",
@@ -89,26 +103,6 @@
     },
     {
       "parameters": {
-        "model": "llama3.2:latest",
-        "options": {}
-      },
-      "id": "f8ccbbde-bbb4-45fd-bec9-9c3cdaa4eada",
-      "name": "Ollama Chat Model",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
-      "position": [
-        1420,
-        680
-      ],
-      "credentials": {
-        "ollamaApi": {
-          "id": "xHuYe0MDGOs9IpBW",
-          "name": "Local Ollama service"
-        }
-      }
-    },
-    {
-      "parameters": {
         "httpMethod": "POST",
         "path": "assistant",
         "responseMode": "responseNode",
@@ -123,28 +117,6 @@
       ],
       "webhookId": "f0224b4b-1644-4d3d-9f12-01a9c04879e4",
       "typeVersion": 2
-    },
-    {
-      "parameters": {},
-      "id": "c982d51b-cecf-481a-a7e5-0c3daf57354e",
-      "name": "Structured Output Parser",
-      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
-      "typeVersion": 1.2,
-      "position": [
-        1940,
-        780
-      ]
-    },
-    {
-      "parameters": {},
-      "id": "296448e5-bd73-444e-9a7d-47adc52b7c47",
-      "name": "Window Buffer Memory",
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.2,
-      "position": [
-        1540,
-        880
-      ]
     }
   ],
   "connections": {
@@ -159,7 +131,7 @@
         ]
       ]
     },
-    "Ollama Chat Model": {
+    "OpenAI Chat Model": {
       "ai_languageModel": [
         [
           {
@@ -180,28 +152,6 @@
           }
         ]
       ]
-    },
-    "Structured Output Parser": {
-      "ai_outputParser": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_outputParser",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Window Buffer Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "settings": {
@@ -209,11 +159,10 @@
   },
   "staticData": null,
   "meta": {
-    "templateId": "2436",
-    "templateCredsSetupCompleted": true
+    "templateId": "2436"
   },
   "pinData": {},
-  "versionId": "72cf3498-4e80-490f-abf3-69102bdb32bb",
-  "triggerCount": 1,
+  "versionId": "f2b927e8-4d20-4287-a8b5-88e6667ef1c4",
+  "triggerCount": 0,
   "tags": []
 }
