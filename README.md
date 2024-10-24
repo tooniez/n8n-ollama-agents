@@ -4,7 +4,6 @@
 
 See [INFO.md](INFO.md) for upstream details.
 
-
 ## 🧩 Components
 
 - **n8n**: Low-code automation platform
@@ -13,7 +12,6 @@ See [INFO.md](INFO.md) for upstream details.
 - **PostgreSQL**: Relational database for data storage
 - **Redis**: In-memory data structure store, used for caching and session management
 - **Supabase**: Open-source alternative to Firebase, used for real-time data sync and storage
-
 
 ## 🛠 Project Workflow
 
@@ -43,11 +41,25 @@ http://host.docker.internal
 - Demo Agent Workflow
 - Qdrant Vector Store Loader
 - Supabase Vector Store Loader
+- Flux Image Generator
+- Company Research Workflow
+- Appointment Booking Agent
+- LinkedIn Post Automation
+- Reddit Trend Analysis
+- Hacker News Insights
+- News Aggregator
+- Notion to LinkedIn Poster
+- Siri Ollama Agent
+
+## Getting Started
+
+```shell
+docker compose up -d
+```
 
 ## Backup and Restore
 
 Workflow and Credential backups are stored in `./backups` and can be restored using the `n8n-restore` container.
-
 
 ### Backup
 
