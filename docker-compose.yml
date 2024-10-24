@@ -6,11 +6,11 @@ volumes:
   redis_storage:
 
 networks:
-  demo:
+  bridge:
 
 x-n8n: &service-n8n
   image: n8nio/n8n:latest
-  networks: ['demo']
+  networks: ['bridge']
   environment:
     - DB_TYPE=postgresdb
     - DB_POSTGRESDB_HOST=postgres
@@ -26,28 +26,28 @@ x-n8n: &service-n8n
 x-ollama: &service-ollama
   image: ollama/ollama:latest
   container_name: ollama
-  networks: ['demo']
+  networks: ['bridge']
   restart: unless-stopped
   ports:
     - 11434:11434
   volumes:
     - ollama_storage:/root/.ollama
-
 x-init-ollama: &init-ollama
   image: ollama/ollama:latest
-  networks: ['demo']
+  networks: ['bridge']
   container_name: ollama-pull-llama
   volumes:
     - ollama_storage:/root/.ollama
   entrypoint: /bin/sh
   command:
     - "-c"
-    - "sleep 3; OLLAMA_HOST=ollama:11434 ollama pull llama3.1"
+    - "sleep 3; OLLAMA_HOST=ollama:11434 ollama pull llama3.2:latest"
 
 services:
   postgres:
     image: postgres:16-alpine
-    networks: ['demo']
+    container_name: postgres
+    networks: ['bridge']
     restart: unless-stopped
     ports:
       - 5432:5432
@@ -114,7 +114,7 @@ services:
   qdrant:
     image: qdrant/qdrant
     container_name: qdrant
-    networks: ['demo']
+    networks: ['bridge']
     restart: unless-stopped
     ports:
       - 6333:6333
@@ -124,7 +124,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
-    networks: ['demo']
+    networks: ['bridge']
     restart: unless-stopped
     environment:
       - REDIS_HOST
