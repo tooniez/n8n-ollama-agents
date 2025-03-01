@@ -20,8 +20,7 @@ x-n8n: &service-n8n
     - N8N_PERSONALIZATION_ENABLED=false
     - N8N_ENCRYPTION_KEY
     - N8N_USER_MANAGEMENT_JWT_SECRET
-  links:
-    - postgres
+    - OLLAMA_HOST=ollama:11434
 
 x-ollama: &service-ollama
   image: ollama/ollama:latest
@@ -39,6 +38,8 @@ x-init-ollama: &init-ollama
   volumes:
     - ollama_storage:/root/.ollama
   entrypoint: /bin/sh
+  environment:
+    - OLLAMA_HOST=ollama:11434
   command:
     - "-c"
     - "sleep 3; OLLAMA_HOST=ollama:11434 ollama pull llama3.2:latest"
@@ -93,6 +94,7 @@ services:
 
   n8n:
     <<: *service-n8n
+    hostname: n8n
     container_name: n8n
     restart: unless-stopped
     ports:
@@ -113,6 +115,7 @@ services:
 
   qdrant:
     image: qdrant/qdrant
+    hostname: qdrant
     container_name: qdrant
     networks: ['bridge']
     restart: unless-stopped
@@ -152,6 +155,14 @@ services:
               count: 1
               capabilities: [gpu]
 
+  ollama-gpu-amd:
+    profiles: ["gpu-amd"]
+    <<: *service-ollama
+    image: ollama/ollama:rocm
+    devices:
+      - "/dev/kfd"
+      - "/dev/dri"
+
   ollama-pull-llama-cpu:
     profiles: ["cpu"]
     <<: *init-ollama
@@ -163,3 +174,10 @@ services:
     <<: *init-ollama
     depends_on:
       - ollama-gpu
+
+  ollama-pull-llama-gpu-amd:
+    profiles: [gpu-amd]
+    <<: *init-ollama
+    image: ollama/ollama:rocm
+    depends_on:
+     - ollama-gpu-amd
