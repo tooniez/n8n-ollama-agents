@@ -42,13 +42,13 @@ x-init-ollama: &init-ollama
     - OLLAMA_HOST=ollama:11434
   command:
     - "-c"
-    - "sleep 3; OLLAMA_HOST=ollama:11434 ollama pull llama3.2:latest"
+    - "sleep 3; ollama pull llama3.2"
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: postgres
-    networks: ['bridge']
+    hostname: postgres
+    networks: ['demo']
     restart: unless-stopped
     ports:
       - 5432:5432
@@ -66,7 +66,8 @@ services:
 
   n8n-restore:
     <<: *service-n8n
-    container_name: n8n-restore
+    hostname: n8n-import
+    container_name: n8n-import
     entrypoint: /bin/sh
     command:
       - "-c"
