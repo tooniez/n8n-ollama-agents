@@ -48,7 +48,7 @@ services:
   postgres:
     image: postgres:16-alpine
     hostname: postgres
-    networks: ['demo']
+    networks: ['bridge']
     restart: unless-stopped
     ports:
       - 5432:5432
@@ -109,8 +109,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      n8n-restore:
-        condition: service_completed_successfully
       n8n-backup:
         condition: service_completed_successfully
 
